@@ -1,2 +1,10 @@
-__pycache__
-data
+__pycache__/
+.vscode/
+.venv/
+*.pyc
+*.egg-info/
+*.egg-info
+build/
+dist/
+notebooks/data/
+data/
