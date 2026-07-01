@@ -48,6 +48,13 @@ pip install -e .
 ```
 
 
+## Run tests
+
+```bash
+PYTHONPATH=src pytest
+```
+
+
 ## Import in notebook
 
 ```python
