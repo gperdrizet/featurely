@@ -11,8 +11,17 @@ Solution repository for the lesson 16 feature engineering challenge, now refacto
 
 ```text
 featurely/
+├── data/
 ├── notebooks/
-│   └── complete-solution.ipynb
+│   ├── original-assignment.ipynb
+│   ├── 01-EDA.ipynb
+│   ├── 02-outlier-cleaning.ipynb
+│   ├── 03-feature-transformations.ipynb
+│   ├── 04-interaction-features.ipynb
+│   ├── 05-p_censoring.ipynb
+│   ├── complete-solution.ipynb
+│   ├── config.py
+│   └── data/
 ├── src/
 │   └── featurely/
 │       ├── __init__.py
@@ -24,6 +33,8 @@ featurely/
 │       └── diagnostics.py
 ├── tests/
 │   └── test_imports.py
+├── AGENTS.md
+├── README.md
 └── pyproject.toml
 ```
 
