@@ -51,27 +51,27 @@ pip install -e .
 ## Import in notebook
 
 ```python
-from featurely import (
-		add_pipeline_step,
-		plot_pipeline_steps,
-		plot_feature_distributions,
-		get_feature_correlations,
-		plot_feature_correlations,
-		plot_features_vs_label,
-		impute_outliers_with_knn,
-		clip_outliers,
-		transform_outliers,
-		apply_standard_scale,
-		apply_log1p,
-		apply_sqrt,
-		apply_yeo_johnson,
-		apply_quantile_normal,
-		run_per_feature_scan,
-		plot_combined_per_feature_scan,
-		plot_significant_transform_scatters,
-		run_pairwise_scan,
-		plot_combined_pairwise_scan,
-		plot_significant_pairwise_scatters,
-		compute_vif,
-)
+import featurely as fl
+
+fl.add_pipeline_step(...)
+fl.plot_pipeline_steps(...)
+fl.plot_feature_distributions(...)
+fl.get_feature_correlations(...)
+fl.plot_feature_correlations(...)
+fl.plot_features_vs_label(...)
+fl.impute_outliers_with_knn(...)
+fl.clip_outliers(...)
+fl.transform_outliers(...)
+fl.apply_standard_scale(...)
+fl.apply_log1p(...)
+fl.apply_sqrt(...)
+fl.apply_yeo_johnson(...)
+fl.apply_quantile_normal(...)
+fl.run_per_feature_scan(...)
+fl.plot_combined_per_feature_scan(...)
+fl.plot_significant_transform_scatters(...)
+fl.run_pairwise_scan(...)
+fl.plot_combined_pairwise_scan(...)
+fl.plot_significant_pairwise_scatters(...)
+fl.compute_vif(...)
 ```

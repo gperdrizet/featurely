@@ -1,13 +1,8 @@
-from featurely import (
-    add_pipeline_step,
-    clip_outliers,
-    compute_vif,
-    run_pairwise_scan,
-)
+import featurely as fl
 
 
 def test_exports_are_importable():
-    assert callable(add_pipeline_step)
-    assert callable(clip_outliers)
-    assert callable(compute_vif)
-    assert callable(run_pairwise_scan)
+    assert callable(fl.add_pipeline_step)
+    assert callable(fl.clip_outliers)
+    assert callable(fl.compute_vif)
+    assert callable(fl.run_pairwise_scan)
