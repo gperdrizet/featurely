@@ -38,24 +38,18 @@ def add_pipeline_step(
         * 100
     )
 
-    return pd.concat(
-        [
-            results_df,
-            pd.DataFrame(
-                [
-                    {
-                        "stage": label,
-                        "mean_r2": scores.mean(),
-                        "std_r2": scores.std(),
-                        "pct_vs_raw": pct_vs_raw,
-                        "color": color,
-                        "scores": scores,
-                    }
-                ]
-            ),
-        ],
-        ignore_index=True,
-    )
+    row = {
+        "stage": label,
+        "mean_r2": scores.mean(),
+        "std_r2": scores.std(),
+        "pct_vs_raw": pct_vs_raw,
+        "color": color,
+        "scores": scores,
+    }
+
+    updated = results_df.copy()
+    updated.loc[len(updated)] = row
+    return updated
 
 
 def plot_pipeline_steps(results_df: pd.DataFrame, title: str = "CV R2 pipeline steps") -> None:
