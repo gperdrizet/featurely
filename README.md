@@ -40,6 +40,20 @@ featurely/
 └── pyproject.toml
 ```
 
+## Notebook run order
+
+Run the staged notebooks in this order when you want to reproduce the step-by-step feature engineering workflow:
+
+| Step | Notebook | Purpose | Output |
+|---|---|---|---|
+| 1 | `01-EDA.ipynb` | EDA and baseline profiling | `data/01-EDA.csv` |
+| 2 | `02-outlier-cleaning.ipynb` | Outlier strategy evaluation and cleaning | `data/02-outlier-cleaning.csv` |
+| 3 | `03-feature-transformations.ipynb` | Per-feature transform scans and apply selected transforms | `data/03-feature-transformations.csv` |
+| 4 | `04-interaction-features.ipynb` | Interaction scans and feature adds | `data/04-interaction-features.csv` |
+| 5 | `05-p_censoring.ipynb` | OOF censoring probability feature | `data/x-final.csv` |
+
+`original-assignment.ipynb` preserves the baseline assignment flow, and `complete-solution.ipynb` is the end-to-end combined walkthrough.
+
 
 ## Install locally
 
