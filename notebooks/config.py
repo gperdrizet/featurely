@@ -13,6 +13,9 @@ DATA_DIR = ROOT_DIR / "data"
 # Ensure output directory exists for read/write pipeline steps.
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+# Shared stage-metrics store used by notebooks 02-05.
+PIPELINE_RESULTS_PATH = DATA_DIR / "pipeline-results.pkl"
+
 # Feature engineering configuration
 OUTLIER_METHOD = "clip"  # Options: 'impute', 'clip', 'transform', 'ignore'
 OUTLIER_THRESHOLD = 2.25

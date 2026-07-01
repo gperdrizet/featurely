@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.linear_model import LinearRegression
@@ -13,28 +15,88 @@ DEFAULT_PIPELINE_COLORS = {
     "+ interactions": "#7030a0",
 }
 
+_PIPELINE_RESULTS_COLUMNS = ["stage", "mean_r2", "std_r2", "pct_vs_raw", "color", "scores"]
+
+
+def _empty_pipeline_results_df() -> pd.DataFrame:
+    return pd.DataFrame(columns=_PIPELINE_RESULTS_COLUMNS)
+
+
+def _load_pipeline_results(
+    results_df: pd.DataFrame | None,
+    results_path: str | Path | None,
+) -> pd.DataFrame:
+    """Load persisted pipeline results when a path is provided, otherwise use in-memory data."""
+    if results_path is not None:
+        path = Path(results_path)
+        if path.exists():
+            loaded = pd.read_pickle(path)
+            # Keep only expected columns so downstream plotting remains stable.
+            return loaded.reindex(columns=_PIPELINE_RESULTS_COLUMNS)
+        return _empty_pipeline_results_df()
+
+    if results_df is None:
+        return _empty_pipeline_results_df()
+
+    return results_df.reindex(columns=_PIPELINE_RESULTS_COLUMNS).copy()
+
+
+def _save_pipeline_results(results_df: pd.DataFrame, results_path: str | Path | None) -> None:
+    if results_path is None:
+        return
+
+    path = Path(results_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    results_df.to_pickle(path)
+
+
+def _recompute_pct_vs_raw(results_df: pd.DataFrame) -> pd.DataFrame:
+    """Recompute percent improvement for all stages based on the current raw baseline row."""
+    if results_df.empty or "raw" not in results_df["stage"].values:
+        return results_df
+
+    raw_mean = float(results_df.loc[results_df["stage"] == "raw", "mean_r2"].iloc[0])
+    if raw_mean == 0:
+        results_df["pct_vs_raw"] = 0.0
+        return results_df
+
+    results_df["pct_vs_raw"] = (
+        (results_df["mean_r2"] - raw_mean) / abs(raw_mean) * 100
+    )
+    results_df.loc[results_df["stage"] == "raw", "pct_vs_raw"] = 0.0
+    return results_df
+
 
 def add_pipeline_step(
-    results_df: pd.DataFrame,
+    results_df: pd.DataFrame | None,
     label: str,
     x: pd.DataFrame,
     y: pd.Series,
     color: str | None = None,
     color_map: dict[str, str] | None = None,
     cv: int = 10,
+    results_path: str | Path | None = None,
 ) -> pd.DataFrame:
-    """Run cross-validation for one pipeline step and append row-level summary."""
+    """Run cross-validation for one pipeline step and upsert by stage name.
+
+    When ``results_path`` is provided, prior results are loaded from disk before
+    the update and saved back after the update. This supports sequential notebook
+    runs without duplicated stage rows.
+    """
+    updated = _load_pipeline_results(results_df, results_path)
     scores = cross_val_score(LinearRegression(), x, y, cv=cv, scoring="r2")
 
     if color is None:
         palette = color_map or DEFAULT_PIPELINE_COLORS
         color = palette.get(label, "#aaaaaa")
 
+    raw_rows = updated.loc[updated["stage"] == "raw", "mean_r2"] if not updated.empty else pd.Series(dtype=float)
+    raw_mean = float(raw_rows.iloc[0]) if len(raw_rows) > 0 else 0.0
     pct_vs_raw = (
         0.0
-        if len(results_df) == 0
-        else (scores.mean() - results_df["mean_r2"].iloc[0])
-        / abs(results_df["mean_r2"].iloc[0])
+        if label == "raw" or raw_mean == 0.0
+        else (scores.mean() - raw_mean)
+        / abs(raw_mean)
         * 100
     )
 
@@ -47,13 +109,39 @@ def add_pipeline_step(
         "scores": scores,
     }
 
-    updated = results_df.copy()
-    updated.loc[len(updated)] = row
+    if not updated.empty:
+        # Keep latest entry when prior notebook runs created duplicate stage names.
+        updated = updated.drop_duplicates(subset=["stage"], keep="last").reset_index(drop=True)
+
+    stage_matches = updated.index[updated["stage"] == label].tolist()
+    if stage_matches:
+        idx = stage_matches[0]
+        for col, value in row.items():
+            updated.at[idx, col] = value
+    else:
+        updated.loc[len(updated)] = row
+
+    updated = _recompute_pct_vs_raw(updated)
+    _save_pipeline_results(updated, results_path)
     return updated
 
 
-def plot_pipeline_steps(results_df: pd.DataFrame, title: str = "CV R2 pipeline steps") -> None:
-    """Draw stage-wise cross-validation boxplots and print a text summary."""
+def plot_pipeline_steps(
+    results_df: pd.DataFrame | None,
+    title: str = "CV R2 pipeline steps",
+    results_path: str | Path | None = None,
+) -> None:
+    """Draw stage-wise cross-validation boxplots and print a text summary.
+
+    When ``results_path`` is provided, results are loaded from disk before plotting.
+    """
+    results_df = _load_pipeline_results(results_df, results_path)
+    if results_df.empty:
+        raise ValueError("No pipeline results available to plot.")
+
+    # Keep summaries consistent even when loading results created before pct_vs_raw existed.
+    results_df = _recompute_pct_vs_raw(results_df.copy())
+
     labels = results_df["stage"].tolist()
     all_scores = results_df["scores"].tolist()
     colors = results_df["color"].tolist()
@@ -75,12 +163,8 @@ def plot_pipeline_steps(results_df: pd.DataFrame, title: str = "CV R2 pipeline s
     plt.show()
 
     for _, row in results_df.iterrows():
-        pct_str = (
-            f"  ({row['pct_vs_raw']:+.2f}% vs raw)"
-            if row["pct_vs_raw"] != 0.0
-            else ""
-        )
+        pct_vs_raw = float(row["pct_vs_raw"]) if pd.notna(row["pct_vs_raw"]) else 0.0
         print(
             f"{row['stage']:>25}: mean R2 = {row['mean_r2']:.4f} "
-            f"+- {row['std_r2']:.4f}{pct_str}"
+            f"± {row['std_r2']:.4f}  ({pct_vs_raw:+.2f}% vs raw)"
         )
