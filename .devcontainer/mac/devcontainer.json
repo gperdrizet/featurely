@@ -6,7 +6,7 @@
 	// accessible inside Docker containers).
 	// See here: https://hub.docker.com/r/gperdrizet/datascience-mac
 	"name": "DataScience Mac",
-	"image": "gperdrizet/datascience-mac",
+	"image": "gperdrizet/datascience-mac:5.1.2",
     "runArgs": [
 		"--platform", "linux/arm64",  // Run as ARM64 image (native on Apple Silicon)
 		"--network=bridge"            // Explicitly use bridge network for internet access
@@ -42,7 +42,7 @@
 	"onCreateCommand": "mkdir -p data && mkdir -p notebooks",
 
 	// Use 'postCreateCommand' to run commands once after the container is created
-	"postCreateCommand": "",
+	"postCreateCommand": "pip install -r requirements.txt",
 
 	// Use 'postAttachCommand' to run commands each time a user connects to the container
 	"postAttachCommand": ""

@@ -4,7 +4,7 @@
 	// Based on python:3.12-slim with data science packages. CPU only, no GPU dependencies.
 	// See here: https://hub.docker.com/r/gperdrizet/datascience-cpu
 	"name": "DataScience CPU",
-	"image": "gperdrizet/datascience-cpu",
+	"image": "gperdrizet/datascience-cpu:5.1.2",
     "runArgs": [
 		"--network=bridge"            // Explicitly use bridge network for internet access
 	],
@@ -39,7 +39,7 @@
 	"onCreateCommand": "mkdir -p data && mkdir -p notebooks",
 
 	// Use 'postCreateCommand' to run commands once after the container is created
-	"postCreateCommand": "",
+	"postCreateCommand": "pip install -r requirements.txt",
 
 	// Use 'postAttachCommand' to run commands each time a user connects to the container
 	"postAttachCommand": ""
