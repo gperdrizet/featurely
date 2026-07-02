@@ -1,8 +1,10 @@
 name: Docs
 
+# Runs as part of a real PyPI release (called from publish.yml) or manually
+# via workflow_dispatch. Docs are not rebuilt on ordinary pushes to main, so
+# the published site always matches the latest released version.
 on:
-  push:
-    branches: [main]
+  workflow_call:
   workflow_dispatch:
 
 permissions:

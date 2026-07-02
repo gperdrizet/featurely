@@ -50,7 +50,13 @@ jobs:
             exit 1
           fi
 
+      # The deploy key lets the version-bump commit and tag bypass the main
+      # branch ruleset: add "Deploy keys" to the ruleset bypass list and store
+      # the private key as the DEPLOY_KEY secret. checkout configures the
+      # origin remote to use this key for the later push.
       - uses: actions/checkout@v5
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       - uses: actions/setup-python@v5
         with:
@@ -106,3 +112,16 @@ jobs:
           VERSION: ${{ inputs.version }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release create "v${VERSION}" --title "v${VERSION}" --generate-notes
+
+  # Deploy documentation only after a successful real release, never for
+  # TestPyPI rehearsals. Called directly because the tag and release created
+  # above with GITHUB_TOKEN cannot trigger other workflows.
+  docs:
+    name: Deploy documentation
+    needs: build-and-publish
+    if: ${{ !inputs.test_pypi }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/docs.yml
