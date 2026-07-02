@@ -112,3 +112,16 @@ jobs:
           VERSION: ${{ inputs.version }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release create "v${VERSION}" --title "v${VERSION}" --generate-notes
+
+  # Deploy documentation only after a successful real release, never for
+  # TestPyPI rehearsals. Called directly because the tag and release created
+  # above with GITHUB_TOKEN cannot trigger other workflows.
+  docs:
+    name: Deploy documentation
+    needs: build-and-publish
+    if: ${{ !inputs.test_pypi }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/docs.yml
