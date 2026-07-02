@@ -7,8 +7,8 @@ from pathlib import Path
 
 # Data locations
 DATA_URL = "https://media.githubusercontent.com/media/gperdrizet/fullstack-2605/refs/heads/main/data/california_housing.csv"
-ROOT_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = ROOT_DIR / "data"
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = ROOT_DIR / "data/fsa-feature-engineering-challenge"
 
 # Ensure output directory exists for read/write pipeline steps.
 DATA_DIR.mkdir(parents=True, exist_ok=True)
