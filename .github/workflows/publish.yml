@@ -50,7 +50,13 @@ jobs:
             exit 1
           fi
 
+      # The deploy key lets the version-bump commit and tag bypass the main
+      # branch ruleset: add "Deploy keys" to the ruleset bypass list and store
+      # the private key as the DEPLOY_KEY secret. checkout configures the
+      # origin remote to use this key for the later push.
       - uses: actions/checkout@v5
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       - uses: actions/setup-python@v5
         with:
