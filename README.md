@@ -21,7 +21,11 @@ featurely/
 │   ├── 03-feature-transformations.ipynb
 │   ├── 04-interaction-features.ipynb
 │   ├── 05-p_censoring.ipynb
-│   ├── complete-solution.ipynb
+│   ├── 06-location-feature-encoding.ipynb
+│   ├── 07-aggregate-features.ipynb
+│   ├── 08-clustering.ipynb
+│   ├── 09-smoothing.ipynb
+│   ├── 10-polyfeatures-pca.ipynb
 │   ├── config.py
 │   └── data/
 ├── src/
@@ -32,6 +36,11 @@ featurely/
 │       ├── outliers.py
 │       ├── transforms.py
 │       ├── scans.py
+│       ├── geo.py
+│       ├── aggregate.py
+│       ├── cluster.py
+│       ├── smoothing.py
+│       ├── decomposition.py
 │       └── diagnostics.py
 ├── tests/
 │   └── test_imports.py
@@ -50,9 +59,14 @@ Run the staged notebooks in this order when you want to reproduce the step-by-st
 | 2 | `02-outlier-cleaning.ipynb` | Outlier strategy evaluation and cleaning | `data/02-outlier-cleaning.csv` |
 | 3 | `03-feature-transformations.ipynb` | Per-feature transform scans and apply selected transforms | `data/03-feature-transformations.csv` |
 | 4 | `04-interaction-features.ipynb` | Interaction scans and feature adds | `data/04-interaction-features.csv` |
-| 5 | `05-p_censoring.ipynb` | OOF censoring probability feature | `data/x-final.csv` |
+| 5 | `05-p_censoring.ipynb` | OOF censoring probability feature | `data/05-p_censoring.csv` |
+| 6 | `06-location-feature-encoding.ipynb` | City distances, geohash cells, rotated coordinates | `data/06-location-feature-encoding.csv` |
+| 7 | `07-aggregate-features.ipynb` | Quantile bin summary statistics | `data/07-aggregate-features.csv` |
+| 8 | `08-clustering.ipynb` | K-means membership and centroid distance features | `data/08-clustering.csv` |
+| 9 | `09-smoothing.ipynb` | Spatial kernel smoothing of features | `data/09-smoothing.csv` |
+| 10 | `10-polyfeatures-pca.ipynb` | Polynomial expansion and PCA component selection | `data/10-polyfeatures.csv`, `data/x-final.csv` |
 
-`original-assignment.ipynb` preserves the baseline assignment flow, and `complete-solution.ipynb` is the end-to-end combined walkthrough.
+`original-assignment.ipynb` preserves the baseline assignment flow.
 
 
 ## Install locally

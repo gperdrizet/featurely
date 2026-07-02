@@ -23,7 +23,12 @@ The package is intentionally small and function-oriented. `src/featurely/__init_
 - `eda.py`: distribution plots, correlation analysis, and target-vs-feature visualization.
 - `outliers.py`: IQR-based outlier clipping, log-style transformation, and KNN imputation.
 - `transforms.py`: scaling and monotonic transforms used during feature engineering.
-- `scans.py`: per-feature and pairwise scan utilities for residual analysis and significance testing.
+- `scans.py`: per-feature, pairwise, and generic candidate scan utilities for residual analysis and significance testing.
+- `geo.py`: haversine distances to anchor cities, hand-rolled geohash encoding, and rotated coordinates.
+- `aggregate.py`: quantile bin summary statistic features.
+- `cluster.py`: k-means selection diagnostics and cluster membership features.
+- `smoothing.py`: Gaussian kernel spatial smoothing of features.
+- `decomposition.py`: polynomial expansion, PCA variance plots, and CV-based component selection.
 - `diagnostics.py`: variance inflation factor calculation.
 
 Implementation pattern:
@@ -41,8 +46,12 @@ The notebook sequence is the main narrative for the project:
 3. `02-outlier-cleaning.ipynb`: outlier handling experiments.
 4. `03-feature-transformations.ipynb`: monotonic and distribution-shaping transforms.
 5. `04-interaction-features.ipynb`: pairwise interaction exploration.
-6. `05-p_censoring.ipynb`: final target-censoring stage.
-7. `complete-solution.ipynb`: end-to-end polished version.
+6. `05-p_censoring.ipynb`: target-censoring probability feature.
+7. `06-location-feature-encoding.ipynb`: city distances, geohash cells, and rotated coordinates.
+8. `07-aggregate-features.ipynb`: quantile bin summary statistics.
+9. `08-clustering.ipynb`: k-means membership and centroid distance features.
+10. `09-smoothing.ipynb`: spatial kernel smoothing of features.
+11. `10-polyfeatures-pca.ipynb`: polynomial expansion and PCA component selection; produces the final dataset.
 
 `notebooks/config.py` holds shared notebook constants such as the data URL, output directory, outlier threshold, and selected log-transform features. Prefer changing shared settings there rather than duplicating values across notebooks.
 
