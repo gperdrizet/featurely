@@ -1,3 +1,11 @@
+from .aggregate import compute_bin_aggregates
+from .cluster import compute_kmeans_features, plot_kmeans_selection
+from .decomposition import (
+    make_polynomial_features,
+    plot_pca_component_scan,
+    plot_pca_variance,
+    scan_pca_components,
+)
 from .diagnostics import compute_vif
 from .eda import (
     get_feature_correlations,
@@ -5,16 +13,27 @@ from .eda import (
     plot_feature_distributions,
     plot_features_vs_label,
 )
+from .geo import (
+    CA_CITY_COORDS,
+    compute_city_distances,
+    compute_geohash_cells,
+    compute_rotated_coordinates,
+    encode_geohash,
+    haversine_distance,
+)
 from .outliers import clip_outliers, impute_outliers_with_knn, transform_outliers
 from .pipeline import DEFAULT_PIPELINE_COLORS, add_pipeline_step, plot_pipeline_steps
 from .scans import (
+    plot_candidate_scan,
     plot_combined_pairwise_scan,
     plot_combined_per_feature_scan,
     plot_significant_pairwise_scatters,
     plot_significant_transform_scatters,
+    run_candidate_scan,
     run_pairwise_scan,
     run_per_feature_scan,
 )
+from .smoothing import compute_spatial_smoothed
 from .transforms import (
     apply_log1p,
     apply_quantile_normal,
@@ -45,5 +64,21 @@ __all__ = [
     "run_pairwise_scan",
     "plot_combined_pairwise_scan",
     "plot_significant_pairwise_scatters",
+    "run_candidate_scan",
+    "plot_candidate_scan",
+    "CA_CITY_COORDS",
+    "haversine_distance",
+    "encode_geohash",
+    "compute_city_distances",
+    "compute_geohash_cells",
+    "compute_rotated_coordinates",
+    "compute_bin_aggregates",
+    "plot_kmeans_selection",
+    "compute_kmeans_features",
+    "compute_spatial_smoothed",
+    "make_polynomial_features",
+    "plot_pca_variance",
+    "scan_pca_components",
+    "plot_pca_component_scan",
     "compute_vif",
 ]

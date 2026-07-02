@@ -19,6 +19,95 @@ def _is_effectively_constant(values: np.ndarray, atol: float = 1e-12) -> bool:
     return bool(np.ptp(finite) <= atol)
 
 
+def run_candidate_scan(
+    df: pd.DataFrame,
+    candidates: pd.DataFrame,
+) -> dict[str, tuple[float, float]]:
+    """Measure partial correlation of precomputed candidate columns vs residuals.
+
+    Unlike run_per_feature_scan, which transforms existing columns on the
+    fly, this scan takes a frame of already-built candidate features (city
+    distances, bin aggregates, cluster memberships, and so on). Each
+    candidate is correlated against the residuals of a baseline linear model
+    fit on the current features; a strong correlation means the candidate
+    explains variance the baseline misses.
+    """
+    x = df.drop("MedHouseVal", axis=1).values
+    y_arr = df["MedHouseVal"].values
+    baseline_model = LinearRegression().fit(x, y_arr)
+    residuals = y_arr - baseline_model.predict(x)
+    baseline_r2 = baseline_model.score(x, y_arr)
+
+    print(f"Baseline R2 (in-sample): {baseline_r2:.4f}")
+    print()
+
+    results: dict[str, tuple[float, float]] = {}
+    width = max(len(c) for c in candidates.columns)
+
+    for col in candidates.columns:
+        values = np.asarray(candidates[col], dtype=float)
+
+        if not np.isfinite(values).all():
+            print(f"{col:>{width}}: skipped (non-finite values)")
+            continue
+
+        if _is_effectively_constant(values):
+            print(f"{col:>{width}}: skipped (constant values)")
+            continue
+
+        r, p = pearsonr(values, residuals)
+        results[col] = (r, p)
+        print(f"{col:>{width}}: r = {r:+.4f},  p = {p:.4f}")
+
+    return results
+
+
+def plot_candidate_scan(
+    results: dict[str, tuple[float, float]],
+    title: str,
+    color: str = "#5b9bd5",
+    alpha: float = 0.05,
+) -> dict[str, bool]:
+    """Horizontal bar chart of candidate scan results with BH FDR stars.
+
+    Applies Benjamini-Hochberg false discovery rate correction across all
+    candidates in the scan, marks significant bars with an asterisk, and
+    returns a dict mapping candidate name to significance.
+    """
+    if not results:
+        print("No candidate results to plot.")
+        return {}
+
+    labels = list(results.keys())
+    r_vals = [results[k][0] for k in labels]
+    p_raws = [results[k][1] for k in labels]
+
+    reject, _, _, _ = multipletests(p_raws, alpha=alpha, method="fdr_bh")
+
+    n = len(labels)
+    _, ax = plt.subplots(figsize=(8, max(4, n * 0.35)))
+    y_pos = np.arange(n, dtype=float)
+    ax.barh(y_pos, r_vals, height=0.7, color=color, alpha=0.7)
+
+    for yp, r_val, sig in zip(y_pos, r_vals, reject):
+        if not sig:
+            continue
+        if r_val >= 0:
+            ax.text(r_val + 0.003, yp, "*", va="center", ha="left", fontsize=9, color="black")
+        else:
+            ax.text(r_val - 0.003, yp, "*", va="center", ha="right", fontsize=9, color="black")
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(labels, fontsize=7)
+    ax.axvline(0, color="black", linewidth=0.8)
+    ax.set_xlabel("Pearson r (vs baseline residuals)")
+    ax.set_title(title)
+    plt.tight_layout()
+    plt.show()
+
+    return dict(zip(labels, (bool(s) for s in reject)))
+
+
 def run_per_feature_scan(
     df: pd.DataFrame,
     features: list[str],
