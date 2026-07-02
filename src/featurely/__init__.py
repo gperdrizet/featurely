@@ -14,7 +14,6 @@ from .eda import (
     plot_features_vs_label,
 )
 from .geo import (
-    CA_CITY_COORDS,
     compute_city_distances,
     compute_geohash_cells,
     compute_rotated_coordinates,
@@ -22,7 +21,7 @@ from .geo import (
     haversine_distance,
 )
 from .outliers import clip_outliers, impute_outliers_with_knn, transform_outliers
-from .pipeline import DEFAULT_PIPELINE_COLORS, add_pipeline_step, plot_pipeline_steps
+from .pipeline import add_pipeline_step, plot_pipeline_steps
 from .scans import (
     plot_candidate_scan,
     plot_combined_pairwise_scan,
@@ -43,7 +42,6 @@ from .transforms import (
 )
 
 __all__ = [
-    "DEFAULT_PIPELINE_COLORS",
     "add_pipeline_step",
     "plot_pipeline_steps",
     "plot_feature_distributions",
@@ -66,7 +64,6 @@ __all__ = [
     "plot_significant_pairwise_scatters",
     "run_candidate_scan",
     "plot_candidate_scan",
-    "CA_CITY_COORDS",
     "haversine_distance",
     "encode_geohash",
     "compute_city_distances",

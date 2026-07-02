@@ -27,6 +27,7 @@ def impute_outliers_with_knn(
     Returns:
         A copy of ``df`` with outlier values imputed.
     """
+
     result = df.copy()
 
     for col in features:
@@ -36,6 +37,7 @@ def impute_outliers_with_knn(
         lower = q1 - threshold * iqr
         upper = q3 + threshold * iqr
         outlier_mask = (result[col] < lower) | (result[col] > upper)
+
         result.loc[outlier_mask, col] = np.nan
         print(f"{col}: {outlier_mask.sum():>4} outliers replaced with NaN")
 
@@ -45,6 +47,7 @@ def impute_outliers_with_knn(
     result[features] = imputer.fit_transform(result[features])
 
     print(f"NaN values remaining after imputation: {result.isna().sum().sum()}")
+
     return result
 
 
@@ -63,6 +66,7 @@ def clip_outliers(df: pd.DataFrame, features: list[str], threshold: float = 1.5)
     Returns:
         A copy of ``df`` with the selected columns clipped.
     """
+
     result = df.copy()
 
     for col in features:
@@ -71,6 +75,7 @@ def clip_outliers(df: pd.DataFrame, features: list[str], threshold: float = 1.5)
         iqr = q3 - q1
         lower = q1 - threshold * iqr
         upper = q3 + threshold * iqr
+
         result[col] = result[col].clip(lower=lower, upper=upper)
         print(f"{col}: Outliers clipped to [{lower:.2f}, {upper:.2f}]")
 
@@ -92,6 +97,7 @@ def transform_outliers(df: pd.DataFrame, features: list[str], threshold: float =
     Returns:
         A copy of ``df`` with qualifying columns log-transformed.
     """
+
     result = df.copy()
 
     for col in features:
@@ -106,8 +112,10 @@ def transform_outliers(df: pd.DataFrame, features: list[str], threshold: float =
             if result[col].min() >= 0:
                 result[col] = np.log1p(result[col])
                 print(f"{col}: {n_outliers:>4} outliers -> log-transformed")
+
             else:
                 print(f"{col}: {n_outliers:>4} outliers -> skipped (contains negative values)")
+
         else:
             print(f"{col}: no outliers")
 

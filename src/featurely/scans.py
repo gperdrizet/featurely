@@ -10,14 +10,20 @@ from scipy.stats import pearsonr
 from sklearn.linear_model import LinearRegression
 from statsmodels.stats.multitest import multipletests
 
+from ._display import show_figure
+
 
 def _is_effectively_constant(values: np.ndarray, atol: float = 1e-12) -> bool:
     """Return True when a numeric vector has no meaningful variance."""
+
     if values.size == 0:
         return True
+
     finite = values[np.isfinite(values)]
+
     if finite.size == 0:
         return True
+
     return bool(np.ptp(finite) <= atol)
 
 
@@ -29,12 +35,22 @@ def run_candidate_scan(
     """Measure partial correlation of precomputed candidate columns vs residuals.
 
     Unlike run_per_feature_scan, which transforms existing columns on the
-    fly, this scan takes a frame of already-built candidate features (city
+    fly, this scan takes a frame of already-built candidate features (anchor
     distances, bin aggregates, cluster memberships, and so on). Each
     candidate is correlated against the residuals of a baseline linear model
     fit on the current features; a strong correlation means the candidate
     explains variance the baseline misses.
+
+    Args:
+        df: Input frame containing features and the target.
+        candidates: Frame of precomputed candidate columns to screen.
+        target: Name of the target column used to fit the baseline model.
+
+    Returns:
+        Mapping of candidate name to ``(pearson_r, p_value)`` against the
+        baseline residuals. Non-finite or constant candidates are skipped.
     """
+
     x = df.drop(target, axis=1).values
     y_arr = df[target].values
     baseline_model = LinearRegression().fit(x, y_arr)
@@ -68,15 +84,24 @@ def run_candidate_scan(
 def plot_candidate_scan(
     results: dict[str, tuple[float, float]],
     title: str,
-    color: str = "#5b9bd5",
+    color: str | None = None,
     alpha: float = 0.05,
 ) -> dict[str, bool]:
     """Horizontal bar chart of candidate scan results with BH FDR stars.
 
     Applies Benjamini-Hochberg false discovery rate correction across all
-    candidates in the scan, marks significant bars with an asterisk, and
-    returns a dict mapping candidate name to significance.
+    candidates in the scan and marks significant bars with an asterisk.
+
+    Args:
+        results: Scan results from ``run_candidate_scan``.
+        title: Plot title.
+        color: Optional bar color; when omitted, Matplotlib's default is used.
+        alpha: Significance level for the FDR correction.
+
+    Returns:
+        Mapping of candidate name to significance flag.
     """
+
     if not results:
         print("No candidate results to plot.")
         return {}
@@ -95,8 +120,10 @@ def plot_candidate_scan(
     for yp, r_val, sig in zip(y_pos, r_vals, reject, strict=False):
         if not sig:
             continue
+
         if r_val >= 0:
             ax.text(r_val + 0.003, yp, "*", va="center", ha="left", fontsize=9, color="black")
+
         else:
             ax.text(r_val - 0.003, yp, "*", va="center", ha="right", fontsize=9, color="black")
 
@@ -106,7 +133,7 @@ def plot_candidate_scan(
     ax.set_xlabel("Pearson r (vs baseline residuals)")
     ax.set_title(title)
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
     return dict(zip(labels, (bool(s) for s in reject), strict=False))
 
@@ -124,13 +151,15 @@ def run_per_feature_scan(
         df: Input frame containing features and the target.
         features: Columns to transform and screen.
         transform_fn: Callable applied to each feature series.
-        label_prefix: Prefix used to build result labels, e.g. ``log_MedInc``.
+        label_prefix: Prefix used to build result labels, e.g. ``log``
+            produces labels like ``log_{feature}``.
         target: Name of the target column used to fit the baseline model.
 
     Returns:
         Mapping of candidate label to ``(pearson_r, p_value)`` against the
         baseline residuals. Non-finite or constant transforms are skipped.
     """
+
     x = df.drop(target, axis=1).values
     y_arr = df[target].values
     baseline_model = LinearRegression().fit(x, y_arr)
@@ -146,6 +175,7 @@ def run_per_feature_scan(
     for col in features:
         try:
             transformed = np.asarray(transform_fn(df[col]))
+
             if not np.isfinite(transformed).all():
                 print(f"{label_prefix}_{col}: skipped (non-finite values)")
                 continue
@@ -158,6 +188,7 @@ def run_per_feature_scan(
             label = f"{label_prefix}_{col}"
             results[label] = (r, p)
             print(f"{label:>{width}}: r = {r:+.4f},  p = {p:.4f}")
+
         except Exception as exc:
             print(f"{label_prefix}_{col}: skipped ({exc})")
 
@@ -177,6 +208,7 @@ def plot_combined_per_feature_scan(scan_configs: list[tuple], title: str) -> dic
     Returns:
         Mapping of (transform name, feature) to significance flag.
     """
+
     all_entries = []
     all_p_raws = []
 
@@ -187,6 +219,7 @@ def plot_combined_per_feature_scan(scan_configs: list[tuple], title: str) -> dic
             all_p_raws.append(p)
 
     _, p_corr, _, _ = multipletests(all_p_raws, alpha=0.05, method="fdr_bh")
+
     for entry, pc in zip(all_entries, p_corr, strict=False):
         entry["sig"] = pc < 0.05
 
@@ -213,10 +246,12 @@ def plot_combined_per_feature_scan(scan_configs: list[tuple], title: str) -> dic
             label = f"{prefix}_{feat}"
             r_val = results.get(label, (0.0, 1.0))[0]
             r_vals.append(r_val)
+
             e_sig = next(
                 (e["sig"] for e in all_entries if e["transform"] == name and e["feature"] == feat),
                 False,
             )
+
             sigs.append(e_sig)
 
         ax.barh(y_pos, r_vals, height=bar_h * 0.85, color=color, alpha=0.7)
@@ -225,8 +260,10 @@ def plot_combined_per_feature_scan(scan_configs: list[tuple], title: str) -> dic
         for yp, r_val, sig in zip(y_pos, r_vals, sigs, strict=False):
             if not sig:
                 continue
+
             if r_val >= 0:
                 ax.text(r_val + 0.003, yp, "*", va="center", ha="left", fontsize=9, color="black")
+
             else:
                 ax.text(r_val - 0.003, yp, "*", va="center", ha="right", fontsize=9, color="black")
 
@@ -237,7 +274,7 @@ def plot_combined_per_feature_scan(scan_configs: list[tuple], title: str) -> dic
     ax.set_title(title)
     ax.legend(handles=handles, loc="lower right")
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
     return {(e["transform"], e["feature"]): e["sig"] for e in all_entries}
 
@@ -258,6 +295,7 @@ def plot_significant_transform_scatters(
         title: Figure title.
         target: Name of the target column used to fit the baseline model.
     """
+
     x = df.drop(target, axis=1).values
     y_arr = df[target].values
     residuals = y_arr - LinearRegression().fit(x, y_arr).predict(x)
@@ -283,8 +321,10 @@ def plot_significant_transform_scatters(
 
     for i, (_, name, col, transform_fn, color) in enumerate(sig_pairs):
         ax = axes[i // n_cols, i % n_cols]
+
         try:
             transformed = np.asarray(transform_fn(df[col]))
+
         except Exception:
             ax.set_visible(False)
             continue
@@ -300,7 +340,7 @@ def plot_significant_transform_scatters(
         axes[j // n_cols, j % n_cols].set_visible(False)
 
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
 
 def run_pairwise_scan(
@@ -327,10 +367,12 @@ def run_pairwise_scan(
         Mapping of candidate label to ``(pearson_r, p_value)`` against the
         baseline residuals. Non-finite or constant results are skipped.
     """
+
     n = len(features)
 
     if ordered:
         pairs = [(features[i], features[j]) for i in range(n) for j in range(n) if i != j]
+
     else:
         pairs = [(features[i], features[j]) for i in range(n) for j in range(i if include_self else i + 1, n)]
 
@@ -348,8 +390,10 @@ def run_pairwise_scan(
 
     for col_a, col_b in pairs:
         label = f"{label_prefix}_{col_a}_{col_b}"
+
         try:
             new_vals = operation_fn(df[col_a], df[col_b])
+
         except Exception:
             print(f"{label:>{width}}: skipped (operation error)")
             continue
@@ -382,6 +426,7 @@ def plot_combined_pairwise_scan(scan_configs: list[tuple], title: str) -> dict[t
     Returns:
         Mapping of (operation name, pair suffix) to significance flag.
     """
+
     all_entries = []
     all_p_raws = []
 
@@ -392,6 +437,7 @@ def plot_combined_pairwise_scan(scan_configs: list[tuple], title: str) -> dict[t
             all_p_raws.append(p)
 
     _, p_corr, _, _ = multipletests(all_p_raws, alpha=0.05, method="fdr_bh")
+
     for entry, pc in zip(all_entries, p_corr, strict=False):
         entry["sig"] = pc < 0.05
 
@@ -415,10 +461,12 @@ def plot_combined_pairwise_scan(scan_configs: list[tuple], title: str) -> dict[t
             label = f"{prefix}_{pair_suffix}"
             r_val = results.get(label, (0.0, 1.0))[0] if label in results else 0.0
             r_vals.append(r_val)
+
             e_sig = next(
                 (e["sig"] for e in all_entries if e["op"] == name and e["pair"] == pair_suffix),
                 False,
             )
+
             sigs.append(e_sig)
 
         ax.barh(y_pos, r_vals, height=bar_h * 0.85, color=color, alpha=0.7)
@@ -427,8 +475,10 @@ def plot_combined_pairwise_scan(scan_configs: list[tuple], title: str) -> dict[t
         for yp, r_val, sig in zip(y_pos, r_vals, sigs, strict=False):
             if not sig:
                 continue
+
             if r_val >= 0:
                 ax.text(r_val + 0.003, yp, "*", va="center", ha="left", fontsize=9, color="black")
+
             else:
                 ax.text(r_val - 0.003, yp, "*", va="center", ha="right", fontsize=9, color="black")
 
@@ -439,7 +489,7 @@ def plot_combined_pairwise_scan(scan_configs: list[tuple], title: str) -> dict[t
     ax.set_title(title)
     ax.legend(handles=handles, loc="lower right")
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
     return {(e["op"], e["pair"]): e["sig"] for e in all_entries}
 
@@ -460,6 +510,7 @@ def plot_significant_pairwise_scatters(
         title: Figure title.
         target: Name of the target column used to fit the baseline model.
     """
+
     x = df.drop(target, axis=1).values
     y_arr = df[target].values
     residuals = y_arr - LinearRegression().fit(x, y_arr).predict(x)
@@ -494,6 +545,7 @@ def plot_significant_pairwise_scatters(
 
         try:
             new_vals = np.asarray(op_fn(df[col_a], df[col_b]))
+
         except Exception:
             ax.set_visible(False)
             continue
@@ -509,4 +561,4 @@ def plot_significant_pairwise_scatters(
         axes[j // n_cols, j % n_cols].set_visible(False)
 
     plt.tight_layout()
-    plt.show()
+    show_figure()

@@ -21,23 +21,42 @@ class TestGeo:
         assert fl.encode_geohash(37.77, -122.42, precision=5) == "9q8yy"
 
     def test_city_distances_columns_and_nearest(self, housing_df):
-        result = fl.compute_city_distances(housing_df)
+        anchors = {
+            "LosAngeles": (34.05, -118.24),
+            "SanFrancisco": (37.77, -122.42),
+            "Fresno": (36.74, -119.79),
+        }
+
+        result = fl.compute_city_distances(housing_df, cities=anchors)
         assert "dist_nearest_city" in result.columns
         dist_cols = [c for c in result.columns if c != "dist_nearest_city"]
-        assert len(dist_cols) == len(fl.CA_CITY_COORDS)
+        assert len(dist_cols) == len(anchors)
+
         # Nearest-city distance can never exceed any individual city distance.
         assert (result["dist_nearest_city"] <= result[dist_cols].min(axis=1) + 1e-9).all()
 
     def test_geohash_cells_one_hot(self, housing_df):
         cells = fl.compute_geohash_cells(housing_df, precision=3, min_cell_count=5)
         assert cells.shape[0] == len(housing_df)
+
         # Every row belongs to exactly one cell.
         np.testing.assert_allclose(cells.sum(axis=1).values, 1.0)
 
     def test_rotated_coordinates_values(self, housing_df):
-        rot = fl.compute_rotated_coordinates(housing_df)
-        np.testing.assert_allclose(rot["coord_sum"], housing_df["Latitude"] + housing_df["Longitude"])
-        np.testing.assert_allclose(rot["coord_diff"], housing_df["Latitude"] - housing_df["Longitude"])
+        # A 45 degree rotation is the sum-and-difference encoding up to the
+        # 1/sqrt(2) scale factor.
+        rot = fl.compute_rotated_coordinates(housing_df, angle_deg=45.0)
+        scale = np.sqrt(2) / 2
+
+        np.testing.assert_allclose(rot["rot45_x"], (housing_df["Longitude"] + housing_df["Latitude"]) * scale)
+
+        np.testing.assert_allclose(rot["rot45_y"], (housing_df["Latitude"] - housing_df["Longitude"]) * scale)
+
+    def test_rotated_coordinates_zero_angle_is_identity(self, housing_df):
+        rot = fl.compute_rotated_coordinates(housing_df, angle_deg=0.0)
+
+        np.testing.assert_allclose(rot["rot0_x"], housing_df["Longitude"])
+        np.testing.assert_allclose(rot["rot0_y"], housing_df["Latitude"])
 
 
 class TestAggregate:
@@ -76,6 +95,7 @@ class TestSmoothing:
     def test_smoothed_columns_and_range(self, housing_df):
         result = fl.compute_spatial_smoothed(housing_df, ["MedInc"], n_neighbors=10)
         assert list(result.columns) == ["smooth_MedInc"]
+
         # A weighted average must stay inside the original value range.
         assert result["smooth_MedInc"].min() >= housing_df["MedInc"].min() - 1e-9
         assert result["smooth_MedInc"].max() <= housing_df["MedInc"].max() + 1e-9

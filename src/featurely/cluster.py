@@ -8,6 +8,8 @@ features are target-free.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -15,11 +17,13 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
 
+from ._display import show_figure
+
 
 def plot_kmeans_selection(
     df: pd.DataFrame,
     features: list[str],
-    k_range=None,
+    k_range: Iterable[int] | None = None,
     random_state: int = 315,
     sample_size: int = 5000,
     title: str | None = None,
@@ -29,14 +33,27 @@ def plot_kmeans_selection(
     Inertia always decreases with k, so we look for the elbow where the
     marginal gain flattens. Silhouette measures how well separated the
     clusters are; it is computed on a random subsample because the full
-    pairwise calculation is quadratic in row count. Returns a dict of
-    silhouette score by k.
+    pairwise calculation is quadratic in row count.
+
+    Args:
+        df: Input frame.
+        features: Columns to cluster on; standard-scaled before fitting.
+        k_range: Candidate cluster counts; defaults to ``range(2, 13)``.
+        random_state: Seed for k-means initialization and subsampling.
+        sample_size: Rows sampled for the silhouette calculation.
+        title: Optional figure title.
+
+    Returns:
+        Mapping of k to silhouette score.
     """
+
     if k_range is None:
         k_range = range(2, 13)
+
     x = StandardScaler().fit_transform(df[list(features)])
 
     ks, inertias, silhouettes = [], [], []
+
     for k in k_range:
         km = KMeans(n_clusters=k, n_init=10, random_state=random_state).fit(x)
         ks.append(k)
@@ -50,7 +67,7 @@ def plot_kmeans_selection(
     axes[0].set_ylabel("Inertia")
     axes[0].set_title("Elbow curve")
 
-    axes[1].plot(ks, silhouettes, marker="o", color="#ed7d31")
+    axes[1].plot(ks, silhouettes, marker="o")
     axes[1].set_xlabel("k")
     axes[1].set_ylabel("Silhouette score")
     axes[1].set_title("Silhouette by k")
@@ -59,7 +76,7 @@ def plot_kmeans_selection(
         fig.suptitle(title)
 
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
     return dict(zip(ks, silhouettes, strict=False))
 
@@ -76,10 +93,24 @@ def compute_kmeans_features(
     """Return cluster membership and centroid distance candidates.
 
     Features are standard-scaled before clustering so no single column
-    dominates the distance metric. One-hot columns are named
-    ``{prefix}_{label}``; the distance column is ``{prefix}_centroid_dist``
-    and is measured in scaled feature space.
+    dominates the distance metric.
+
+    Args:
+        df: Input frame; not modified.
+        features: Columns to cluster on.
+        k: Number of clusters.
+        prefix: Prefix for output column names.
+        one_hot: When True, include one-hot membership columns named
+            ``{prefix}_{label}``.
+        add_distance: When True, include ``{prefix}_centroid_dist``, the
+            distance from each row to its assigned centroid in scaled
+            feature space.
+        random_state: Seed for k-means initialization.
+
+    Returns:
+        A frame of cluster membership and distance candidate columns.
     """
+
     x = StandardScaler().fit_transform(df[list(features)])
     km = KMeans(n_clusters=k, n_init=10, random_state=random_state).fit(x)
 

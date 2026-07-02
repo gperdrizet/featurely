@@ -19,14 +19,17 @@ def compute_vif(df: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
     Returns:
         A frame with ``feature`` and ``VIF`` columns, sorted descending by VIF.
     """
+
     x = df[cols].fillna(0).values.astype(float)
     vifs: list[float] = []
 
     for i in range(len(cols)):
         try:
             value = variance_inflation_factor(x, i)
+
         except Exception:
             value = np.inf
+
         vifs.append(value)
 
     return pd.DataFrame({"feature": cols, "VIF": vifs}).sort_values("VIF", ascending=False).reset_index(drop=True)

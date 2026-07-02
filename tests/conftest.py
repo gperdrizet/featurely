@@ -22,7 +22,9 @@ def rng() -> np.random.Generator:
 @pytest.fixture()
 def housing_df(rng: np.random.Generator) -> pd.DataFrame:
     """Small synthetic frame with a planted linear signal plus noise."""
+
     n = 400
+
     df = pd.DataFrame(
         {
             "MedInc": rng.gamma(2.0, 2.0, n),
@@ -34,5 +36,6 @@ def housing_df(rng: np.random.Generator) -> pd.DataFrame:
             "Longitude": rng.uniform(-124.4, -114.1, n),
         }
     )
+
     df["MedHouseVal"] = 0.5 * df["MedInc"] + 0.01 * df["HouseAge"] + rng.normal(0, 0.5, n)
     return df
