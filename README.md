@@ -5,9 +5,7 @@ Solution repository for the lesson 16 feature engineering challenge, now refacto
 
 ## Project lineage
 
-- Current repository: https://github.com/gperdrizet/featurely
-- Origin: Fullstack Academy lesson 16 feature engineering assignment from https://github.com/gperdrizet/fullstack-2605
-
+This project grew out of the instructor solution for the Fullstack Academy feature engineering challenge activity. The full solution is included in this repository as an example use case for Featurely under `example_notebooks/fsa-feature-engineering-challenge`. The original activity is located in the [cohort 2605 materials repo](https://gperdrizet.github.io/fullstack-2605). See the unit 2, lesson 16 activity notebook. 
 
 ## Package layout
 
