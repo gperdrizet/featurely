@@ -19,6 +19,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
+from ._display import show_figure
+
 
 def make_polynomial_features(
     df: pd.DataFrame,
@@ -70,7 +72,7 @@ def plot_pca_variance(
     ax.set_ylabel("Cumulative explained variance")
     ax.set_title(title)
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
     return pca
 
@@ -142,6 +144,6 @@ def plot_pca_component_scan(
     ax.set_ylabel("R2 score (10-fold CV)")
     ax.set_title(title)
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
     return best_n

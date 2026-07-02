@@ -6,6 +6,8 @@ import pandas as pd
 from scipy.stats import pearsonr, spearmanr
 from sklearn.linear_model import LinearRegression
 
+from ._display import show_figure
+
 
 def plot_feature_distributions(df: pd.DataFrame, exclude: tuple[str, ...] = ()) -> None:
     """Plot histogram distributions for all columns not listed in ``exclude``.
@@ -32,7 +34,7 @@ def plot_feature_distributions(df: pd.DataFrame, exclude: tuple[str, ...] = ()) 
         axes[j // n_cols, j % n_cols].set_visible(False)
 
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
 
 def get_feature_correlations(df: pd.DataFrame, features: list[str]) -> pd.DataFrame:
@@ -123,7 +125,7 @@ def plot_feature_correlations(df: pd.DataFrame, features: list[str]) -> None:
     for j in range(n_pairs, n_rows * n_cols):
         axes[j // n_cols, j % n_cols].set_visible(False)
 
-    plt.show()
+    show_figure()
 
 
 def plot_features_vs_label(df: pd.DataFrame, features: list[str], label: str) -> None:
@@ -167,4 +169,4 @@ def plot_features_vs_label(df: pd.DataFrame, features: list[str], label: str) ->
         axes[j // n_cols, j % n_cols].set_visible(False)
 
     plt.tight_layout()
-    plt.show()
+    show_figure()

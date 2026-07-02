@@ -15,6 +15,8 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
 
+from ._display import show_figure
+
 
 def plot_kmeans_selection(
     df: pd.DataFrame,
@@ -59,7 +61,7 @@ def plot_kmeans_selection(
         fig.suptitle(title)
 
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
     return dict(zip(ks, silhouettes, strict=False))
 

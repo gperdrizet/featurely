@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 
 import featurely as fl
 
@@ -113,7 +114,10 @@ class TestDecomposition:
 
 
 class TestDiagnostics:
+    @pytest.mark.filterwarnings("ignore::RuntimeWarning")
     def test_vif_flags_collinear_column(self, housing_df):
+        # Perfect collinearity makes statsmodels divide by zero internally;
+        # that RuntimeWarning is the expected mechanism behind the inf VIF.
         df = housing_df.copy()
         df["MedInc_copy"] = df["MedInc"] * 2.0  # perfectly collinear
         result = fl.compute_vif(df, ["MedInc", "MedInc_copy", "HouseAge"])

@@ -10,6 +10,8 @@ from scipy.stats import pearsonr
 from sklearn.linear_model import LinearRegression
 from statsmodels.stats.multitest import multipletests
 
+from ._display import show_figure
+
 
 def _is_effectively_constant(values: np.ndarray, atol: float = 1e-12) -> bool:
     """Return True when a numeric vector has no meaningful variance."""
@@ -106,7 +108,7 @@ def plot_candidate_scan(
     ax.set_xlabel("Pearson r (vs baseline residuals)")
     ax.set_title(title)
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
     return dict(zip(labels, (bool(s) for s in reject), strict=False))
 
@@ -237,7 +239,7 @@ def plot_combined_per_feature_scan(scan_configs: list[tuple], title: str) -> dic
     ax.set_title(title)
     ax.legend(handles=handles, loc="lower right")
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
     return {(e["transform"], e["feature"]): e["sig"] for e in all_entries}
 
@@ -300,7 +302,7 @@ def plot_significant_transform_scatters(
         axes[j // n_cols, j % n_cols].set_visible(False)
 
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
 
 def run_pairwise_scan(
@@ -439,7 +441,7 @@ def plot_combined_pairwise_scan(scan_configs: list[tuple], title: str) -> dict[t
     ax.set_title(title)
     ax.legend(handles=handles, loc="lower right")
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
     return {(e["op"], e["pair"]): e["sig"] for e in all_entries}
 
@@ -509,4 +511,4 @@ def plot_significant_pairwise_scatters(
         axes[j // n_cols, j % n_cols].set_visible(False)
 
     plt.tight_layout()
-    plt.show()
+    show_figure()

@@ -7,6 +7,8 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score
 
+from ._display import show_figure
+
 DEFAULT_PIPELINE_COLORS = {
     "raw": "#aaaaaa",
     "+ p_censored": "#ffc000",
@@ -175,7 +177,7 @@ def plot_pipeline_steps(
     ax.set_ylabel("R2 score (10-fold CV)")
     plt.xticks(rotation=15, ha="right")
     plt.tight_layout()
-    plt.show()
+    show_figure()
 
     for _, row in results_df.iterrows():
         pct_vs_raw = float(row["pct_vs_raw"]) if pd.notna(row["pct_vs_raw"]) else 0.0
