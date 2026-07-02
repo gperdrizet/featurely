@@ -11,7 +11,22 @@ def impute_outliers_with_knn(
     n_neighbors: int = 7,
     threshold: float = 1.5,
 ) -> pd.DataFrame:
-    """Replace IQR outliers with NaN, then impute with KNN."""
+    """Replace IQR outliers with NaN, then impute them with KNN.
+
+    Values outside ``[Q1 - threshold * IQR, Q3 + threshold * IQR]`` are
+    treated as missing and reconstructed from the ``n_neighbors`` most
+    similar rows, which preserves multivariate structure better than
+    clipping when outliers are recording errors rather than real extremes.
+
+    Args:
+        df: Input frame; not modified.
+        features: Columns to screen for outliers and impute.
+        n_neighbors: Number of neighbor rows used by the KNN imputer.
+        threshold: IQR multiplier that defines the outlier fences.
+
+    Returns:
+        A copy of ``df`` with outlier values imputed.
+    """
     result = df.copy()
 
     for col in features:
@@ -34,7 +49,20 @@ def impute_outliers_with_knn(
 
 
 def clip_outliers(df: pd.DataFrame, features: list[str], threshold: float = 1.5) -> pd.DataFrame:
-    """Clip feature values to IQR bounds."""
+    """Clip feature values to their IQR fences.
+
+    Winsorizes each column to ``[Q1 - threshold * IQR, Q3 + threshold * IQR]``.
+    Clipping keeps every row and caps the influence of extreme values, at the
+    cost of piling clipped observations onto the fence values.
+
+    Args:
+        df: Input frame; not modified.
+        features: Columns to clip.
+        threshold: IQR multiplier that defines the clip bounds.
+
+    Returns:
+        A copy of ``df`` with the selected columns clipped.
+    """
     result = df.copy()
 
     for col in features:
@@ -50,7 +78,20 @@ def clip_outliers(df: pd.DataFrame, features: list[str], threshold: float = 1.5)
 
 
 def transform_outliers(df: pd.DataFrame, features: list[str], threshold: float = 1.5) -> pd.DataFrame:
-    """Log-transform features that contain IQR outliers and are non-negative."""
+    """Log-transform features that contain IQR outliers and are non-negative.
+
+    Applies ``log1p`` only to columns where outliers are present and all
+    values are non-negative, compressing long right tails instead of
+    discarding or capping them.
+
+    Args:
+        df: Input frame; not modified.
+        features: Columns to screen and potentially transform.
+        threshold: IQR multiplier that defines the outlier fences.
+
+    Returns:
+        A copy of ``df`` with qualifying columns log-transformed.
+    """
     result = df.copy()
 
     for col in features:

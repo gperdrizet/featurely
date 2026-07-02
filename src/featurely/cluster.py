@@ -19,7 +19,7 @@ from sklearn.preprocessing import StandardScaler
 def plot_kmeans_selection(
     df: pd.DataFrame,
     features: list[str],
-    k_range=range(2, 13),
+    k_range=None,
     random_state: int = 315,
     sample_size: int = 5000,
     title: str | None = None,
@@ -32,6 +32,8 @@ def plot_kmeans_selection(
     pairwise calculation is quadratic in row count. Returns a dict of
     silhouette score by k.
     """
+    if k_range is None:
+        k_range = range(2, 13)
     x = StandardScaler().fit_transform(df[list(features)])
 
     ks, inertias, silhouettes = [], [], []
@@ -39,9 +41,7 @@ def plot_kmeans_selection(
         km = KMeans(n_clusters=k, n_init=10, random_state=random_state).fit(x)
         ks.append(k)
         inertias.append(km.inertia_)
-        silhouettes.append(
-            silhouette_score(x, km.labels_, sample_size=sample_size, random_state=random_state)
-        )
+        silhouettes.append(silhouette_score(x, km.labels_, sample_size=sample_size, random_state=random_state))
         print(f"k = {k:>2}: inertia = {km.inertia_:>12.1f},  silhouette = {silhouettes[-1]:.4f}")
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 4))
@@ -61,7 +61,7 @@ def plot_kmeans_selection(
     plt.tight_layout()
     plt.show()
 
-    return dict(zip(ks, silhouettes))
+    return dict(zip(ks, silhouettes, strict=False))
 
 
 def compute_kmeans_features(
@@ -93,8 +93,6 @@ def compute_kmeans_features(
     if add_distance:
         # Distance from each row to its own cluster center: a within-cluster
         # gradient that one-hot membership alone cannot express.
-        out[f"{prefix}_centroid_dist"] = np.linalg.norm(
-            x - km.cluster_centers_[km.labels_], axis=1
-        )
+        out[f"{prefix}_centroid_dist"] = np.linalg.norm(x - km.cluster_centers_[km.labels_], axis=1)
 
     return out

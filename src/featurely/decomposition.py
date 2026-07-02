@@ -34,10 +34,7 @@ def make_polynomial_features(
     """
     poly = PolynomialFeatures(degree=degree, include_bias=include_bias)
     expanded = poly.fit_transform(df[list(feature_cols)])
-    names = [
-        name.replace(" ", "_x_").replace("^", "_pow")
-        for name in poly.get_feature_names_out(list(feature_cols))
-    ]
+    names = [name.replace(" ", "_x_").replace("^", "_pow") for name in poly.get_feature_names_out(list(feature_cols))]
     return pd.DataFrame(expanded, columns=names, index=df.index)
 
 

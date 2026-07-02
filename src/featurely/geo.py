@@ -123,10 +123,7 @@ def compute_geohash_cells(
     nearly empty cells. Membership indicators are target-free, so there is
     no leakage risk from this encoding.
     """
-    hashes = [
-        encode_geohash(lat, lon, precision)
-        for lat, lon in zip(df[lat_col], df[lon_col])
-    ]
+    hashes = [encode_geohash(lat, lon, precision) for lat, lon in zip(df[lat_col], df[lon_col], strict=False)]
     cells = pd.Series(hashes, index=df.index)
 
     counts = cells.value_counts()

@@ -4,15 +4,17 @@
 
 `featurely` started as a solution to Fullstack Academy AM/ML unit 2, lesson 16: improve a linear regression model on the California housing dataset with feature engineering. The repository now serves two roles:
 
-1. A small Python package of reusable feature-engineering utilities.
+1. A general-purpose Python package of reusable feature-engineering utilities, published to PyPI.
 2. A notebook-driven demo and experiment log that shows the progression from EDA to the final solution.
 
 ## Repository Structure
 
 - `src/featurely/`: importable package code.
-- `tests/`: lightweight package checks.
-- `notebooks/`: the original assignment, staged working notebooks, and the final walkthrough.
-- `data/` and `notebooks/data/`: local CSV outputs and intermediate artifacts created by the notebooks.
+- `tests/`: per-module unit tests plus shared fixtures in `tests/conftest.py`.
+- `example_notebooks/fsa-feature-engineering-challenge/`: the original assignment, staged working notebooks, and the distilled solution notebook.
+- `data/fsa-feature-engineering-challenge/`: local CSV outputs and intermediate artifacts created by the notebooks (gitignored).
+- `docs/` and `mkdocs.yml`: MkDocs Material documentation site, deployed to GitHub Pages.
+- `.github/workflows/`: CI (`test.yml`), release (`publish.yml`), and docs deployment (`docs.yml`).
 - `.devcontainer/`: CPU-only data science container used for development.
 
 ## Package Overview
@@ -34,8 +36,10 @@ The package is intentionally small and function-oriented. `src/featurely/__init_
 Implementation pattern:
 
 - Most functions accept a `pandas.DataFrame`, copy it, and return a transformed copy instead of mutating input.
+- Functions are dataset-agnostic: target and coordinate column names are explicit parameters, never hardcoded.
 - Plotting helpers use `matplotlib` and are meant for notebook use.
 - Scan helpers compare transformed features against linear-model residuals, then apply multiple-testing correction where appropriate.
+- Public functions carry Google-style docstrings; the documentation site renders them via mkdocstrings, and `mkdocs build --strict` fails on missing parameter annotations.
 
 ## Notebook Workflow
 
@@ -53,7 +57,7 @@ The notebook sequence is the main narrative for the project:
 10. `09-smoothing.ipynb`: spatial kernel smoothing of features.
 11. `10-polyfeatures-pca.ipynb`: polynomial expansion and PCA component selection; produces the final dataset.
 
-`notebooks/config.py` holds shared notebook constants such as the data URL, output directory, outlier threshold, and selected log-transform features. Prefer changing shared settings there rather than duplicating values across notebooks.
+The staged notebooks live in `example_notebooks/fsa-feature-engineering-challenge/`. Shared constants such as the data URL, output directory, outlier threshold, and selected log-transform features live in `config.py` in that directory. Prefer changing shared settings there rather than duplicating values across notebooks.
 
 ## Working Rules For Agents
 
@@ -70,7 +74,16 @@ Write without symbols or emojis unless they are required for code or data. Avoid
 
 ## Local Checks
 
-- Package smoke test: `pytest`
-- Editable install: `pip install -e .`
+- Tests: `pytest`
+- Lint: `ruff check src/ tests/`
+- Format: `ruff format --check src/ tests/`
+- Docs build: `mkdocs build --strict` (requires `pip install -e ".[docs]"`)
+- Editable install: `pip install -e ".[dev]"`
+
+## CI and Releases
+
+- Pull requests against `main` run lint, format check, and the test matrix (Python 3.10 to 3.13) via `.github/workflows/test.yml`. Development happens on the `dev` branch.
+- Releases are manually triggered from `main` via `.github/workflows/publish.yml` with a version input. TestPyPI rehearsal runs use a dev-suffixed version and make no repository changes; real runs publish to PyPI first, then commit the version bump, tag, and GitHub release.
+- Documentation deploys to GitHub Pages on push to `main` via `.github/workflows/docs.yml`.
 
 If you change notebook code that writes artifacts, make sure the generated outputs still match the updated analysis and data flow.

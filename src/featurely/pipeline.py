@@ -60,9 +60,7 @@ def _recompute_pct_vs_raw(results_df: pd.DataFrame) -> pd.DataFrame:
         results_df["pct_vs_raw"] = 0.0
         return results_df
 
-    results_df["pct_vs_raw"] = (
-        (results_df["mean_r2"] - raw_mean) / abs(raw_mean) * 100
-    )
+    results_df["pct_vs_raw"] = (results_df["mean_r2"] - raw_mean) / abs(raw_mean) * 100
     results_df.loc[results_df["stage"] == "raw", "pct_vs_raw"] = 0.0
     return results_df
 
@@ -82,6 +80,20 @@ def add_pipeline_step(
     When ``results_path`` is provided, prior results are loaded from disk before
     the update and saved back after the update. This supports sequential notebook
     runs without duplicated stage rows.
+
+    Args:
+        results_df: Prior results frame, or None to start fresh or load from disk.
+        label: Stage name; an existing row with this name is replaced.
+        x: Feature matrix for this stage.
+        y: Target series.
+        color: Explicit bar color; overrides ``color_map`` when given.
+        color_map: Stage-name-to-color mapping; defaults to
+            ``DEFAULT_PIPELINE_COLORS``.
+        cv: Number of cross-validation folds.
+        results_path: Optional pickle path for persisted, rerun-safe results.
+
+    Returns:
+        The updated results frame with recomputed percent-vs-raw values.
     """
     updated = _load_pipeline_results(results_df, results_path)
     scores = cross_val_score(LinearRegression(), x, y, cv=cv, scoring="r2")
@@ -92,13 +104,7 @@ def add_pipeline_step(
 
     raw_rows = updated.loc[updated["stage"] == "raw", "mean_r2"] if not updated.empty else pd.Series(dtype=float)
     raw_mean = float(raw_rows.iloc[0]) if len(raw_rows) > 0 else 0.0
-    pct_vs_raw = (
-        0.0
-        if label == "raw" or raw_mean == 0.0
-        else (scores.mean() - raw_mean)
-        / abs(raw_mean)
-        * 100
-    )
+    pct_vs_raw = 0.0 if label == "raw" or raw_mean == 0.0 else (scores.mean() - raw_mean) / abs(raw_mean) * 100
 
     row = {
         "stage": label,
@@ -134,6 +140,15 @@ def plot_pipeline_steps(
     """Draw stage-wise cross-validation boxplots and print a text summary.
 
     When ``results_path`` is provided, results are loaded from disk before plotting.
+
+    Args:
+        results_df: Results frame from ``add_pipeline_step``, or None when
+            loading from ``results_path``.
+        title: Plot title.
+        results_path: Optional pickle path to load persisted results from.
+
+    Raises:
+        ValueError: If no results are available to plot.
     """
     results_df = _load_pipeline_results(results_df, results_path)
     if results_df.empty:
@@ -149,7 +164,7 @@ def plot_pipeline_steps(
     _, ax = plt.subplots(figsize=(max(5, 2 * len(labels)), 4))
     bp = ax.boxplot(all_scores, tick_labels=labels, patch_artist=True)
 
-    for patch, color in zip(bp["boxes"], colors):
+    for patch, color in zip(bp["boxes"], colors, strict=False):
         patch.set_facecolor(color)
         patch.set_alpha(0.7)
 
@@ -164,7 +179,4 @@ def plot_pipeline_steps(
 
     for _, row in results_df.iterrows():
         pct_vs_raw = float(row["pct_vs_raw"]) if pd.notna(row["pct_vs_raw"]) else 0.0
-        print(
-            f"{row['stage']:>25}: mean R2 = {row['mean_r2']:.4f} "
-            f"± {row['std_r2']:.4f}  ({pct_vs_raw:+.2f}% vs raw)"
-        )
+        print(f"{row['stage']:>25}: mean R2 = {row['mean_r2']:.4f} ± {row['std_r2']:.4f}  ({pct_vs_raw:+.2f}% vs raw)")

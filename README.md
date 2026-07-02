@@ -1,6 +1,10 @@
 # featurely
 
-Solution repository for the lesson 16 feature engineering challenge, now refactored into a simple Python package layout.
+[![Tests](https://github.com/gperdrizet/featurely/actions/workflows/test.yml/badge.svg)](https://github.com/gperdrizet/featurely/actions/workflows/test.yml)
+[![PyPI version](https://img.shields.io/pypi/v/featurely)](https://pypi.org/project/featurely/)
+[![Docs](https://github.com/gperdrizet/featurely/actions/workflows/docs.yml/badge.svg)](https://gperdrizet.github.io/featurely/)
+
+Reusable feature engineering utilities for tabular machine learning with pandas and scikit-learn. Documentation: [gperdrizet.github.io/featurely](https://gperdrizet.github.io/featurely/)
 
 
 ## Project lineage
@@ -13,7 +17,8 @@ This project grew out of the instructor solution for the Fullstack Academy featu
 featurely/
 ├── .devcontainers/          # Configuration files for devcontainer development environments
 ├── .github/                 # GitHub workflow files for CI/CD
-├── example-notebooks/       # Notebooks demoing the use of Featurely 
+├── docs/                    # Documentation site source (MkDocs Material)
+├── example_notebooks/       # Notebooks demoing the use of Featurely
 ├── src/
 │   └── featurely/           # The featurely package source tree
 │       ├── __init__.py
@@ -26,12 +31,13 @@ featurely/
 │       ├── aggregate.py
 │       ├── cluster.py
 │       ├── smoothing.py
-│       ├── decomposition.py  
+│       ├── decomposition.py
 │       └── diagnostics.py
 ├── tests/                    # Unit tests
-├── AGENTS.md                 # Onboarding/orientation for AI agents 
+├── AGENTS.md                 # Onboarding/orientation for AI agents
 ├── LICENSE                   # MIT license file
 ├── README.md                 # README document
+├── mkdocs.yml                # Documentation site configuration
 ├── pyproject.toml            # Python package metadata for PyPI
 ├── requirements-dev.txt      # Package build/test requirements
 └── requirements.txt          # Requirements for local dev & example notebooks
@@ -57,17 +63,39 @@ The example notebooks in the `fsa-feature-engineering-challenge` use the Feature
 `original-assignment.ipynb` preserves the baseline assignment flow, and `lesson-16-activity-solution.ipynb` is the final, distilled solution.
 
 
-## Install locally
+## Install
+
+From PyPI:
 
 ```bash
-pip install -e .
+pip install featurely
+```
+
+For local development (editable, with test and lint tooling):
+
+```bash
+pip install -e ".[dev]"
 ```
 
 
 ## Run tests
 
 ```bash
-PYTHONPATH=src pytest
+pytest
+ruff check src/ tests/
+ruff format --check src/ tests/
+```
+
+
+## Documentation
+
+Full API reference and getting-started guide: [gperdrizet.github.io/featurely](https://gperdrizet.github.io/featurely/)
+
+Build locally with:
+
+```bash
+pip install -e ".[docs]"
+mkdocs serve
 ```
 
 

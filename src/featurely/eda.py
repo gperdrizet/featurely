@@ -7,9 +7,15 @@ from scipy.stats import pearsonr, spearmanr
 from sklearn.linear_model import LinearRegression
 
 
-def plot_feature_distributions(df: pd.DataFrame) -> None:
-    """Plot histogram distributions for all non-target feature columns."""
-    features = [c for c in df.columns if c not in ("MedHouseVal", "p_censored")]
+def plot_feature_distributions(df: pd.DataFrame, exclude: tuple[str, ...] = ()) -> None:
+    """Plot histogram distributions for all columns not listed in ``exclude``.
+
+    Args:
+        df: Input frame.
+        exclude: Column names to skip, typically the target and any
+            derived probability columns.
+    """
+    features = [c for c in df.columns if c not in exclude]
 
     n_cols = 4
     n_rows = (len(features) + n_cols - 1) // n_cols
@@ -30,7 +36,20 @@ def plot_feature_distributions(df: pd.DataFrame) -> None:
 
 
 def get_feature_correlations(df: pd.DataFrame, features: list[str]) -> pd.DataFrame:
-    """Compute Pearson and Spearman correlations for each unique feature pair."""
+    """Compute Pearson and Spearman correlations for each unique feature pair.
+
+    Pearson captures linear association; Spearman captures monotonic
+    association. A large gap between the two flags nonlinear but monotonic
+    relationships worth transforming.
+
+    Args:
+        df: Input frame.
+        features: Columns to correlate pairwise.
+
+    Returns:
+        A frame indexed by (Feature A, Feature B) with r and p values for
+        both statistics, sorted by Pearson r descending.
+    """
     feature_pairs = [(f1, f2) for i, f1 in enumerate(features) for j, f2 in enumerate(features) if i < j]
 
     rows: list[dict[str, float | str]] = []
@@ -54,7 +73,12 @@ def get_feature_correlations(df: pd.DataFrame, features: list[str]) -> pd.DataFr
 
 
 def plot_feature_correlations(df: pd.DataFrame, features: list[str]) -> None:
-    """Plot pairwise feature scatters with linear fits and correlation annotations."""
+    """Plot pairwise feature scatters with linear fits and correlation annotations.
+
+    Args:
+        df: Input frame.
+        features: Columns to plot pairwise; every unique pair gets one panel.
+    """
     feature_pairs = [(f1, f2) for i, f1 in enumerate(features) for j, f2 in enumerate(features) if i < j]
     feature_correlations_df = get_feature_correlations(df, features)
 
@@ -102,10 +126,14 @@ def plot_feature_correlations(df: pd.DataFrame, features: list[str]) -> None:
     plt.show()
 
 
-def plot_features_vs_label(
-    df: pd.DataFrame, features: list[str], label: str = "MedHouseVal"
-) -> None:
-    """Plot each feature against target with fitted line and correlation values."""
+def plot_features_vs_label(df: pd.DataFrame, features: list[str], label: str) -> None:
+    """Plot each feature against the label with a fitted line and correlations.
+
+    Args:
+        df: Input frame.
+        features: Feature columns to plot on the x axes.
+        label: Target column plotted on every y axis.
+    """
     n_cols = min(4, len(features))
     n_rows = (len(features) + n_cols - 1) // n_cols
 

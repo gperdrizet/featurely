@@ -9,6 +9,26 @@ description = "Reusable feature engineering utilities extracted from the lesson 
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "Siderealyear" }]
+license = { text = "MIT" }
+keywords = [
+  "feature-engineering",
+  "machine-learning",
+  "pandas",
+  "scikit-learn",
+  "data-science",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Education",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
   "numpy>=1.24",
   "pandas>=2.0",
@@ -25,6 +45,11 @@ Repository = "https://github.com/gperdrizet/featurely"
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0",
+  "ruff>=0.6",
+]
+docs = [
+  "mkdocs-material>=9.5",
+  "mkdocstrings[python]>=0.25",
 ]
 
 [tool.setuptools]
@@ -32,6 +57,23 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "E",   # pycodestyle errors
+  "W",   # pycodestyle warnings
+  "F",   # pyflakes
+  "I",   # isort
+  "UP",  # pyupgrade
+  "B",   # bugbear
+]
+ignore = [
+  "B023",  # loop-variable capture in notebook-style closures is intentional here
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
