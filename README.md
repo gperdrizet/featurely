@@ -37,9 +37,9 @@ featurely/
 └── requirements.txt          # Requirements for local dev & example notebooks
 ```
 
-## Notebook run order
+## Example notebooks
 
-Run the staged notebooks in this order when you want to reproduce the step-by-step feature engineering workflow:
+The example notebooks in the `fsa-feature-engineering-challenge` use the Featurely library to progressively clean the classic California housing data and add engineered features. To reproduce the final dataset, run them in order:
 
 | Step | Notebook | Purpose | Output |
 |---|---|---|---|
@@ -52,9 +52,9 @@ Run the staged notebooks in this order when you want to reproduce the step-by-st
 | 7 | `07-aggregate-features.ipynb` | Quantile bin summary statistics | `data/07-aggregate-features.csv` |
 | 8 | `08-clustering.ipynb` | K-means membership and centroid distance features | `data/08-clustering.csv` |
 | 9 | `09-smoothing.ipynb` | Spatial kernel smoothing of features | `data/09-smoothing.csv` |
-| 10 | `10-polyfeatures-pca.ipynb` | Polynomial expansion and PCA component selection | `data/10-polyfeatures.csv`, `data/x-final.csv` |
+| 10 | `10-polyfeatures-pca.ipynb` | Polynomial expansion and PCA component selection | `data/10-polyfeatures.csv`, `data/final.csv` |
 
-`original-assignment.ipynb` preserves the baseline assignment flow.
+`original-assignment.ipynb` preserves the baseline assignment flow, and `lesson-16-activity-solution.ipynb` is the final, distilled solution.
 
 
 ## Install locally
@@ -82,19 +82,10 @@ fl.plot_feature_distributions(...)
 fl.get_feature_correlations(...)
 fl.plot_feature_correlations(...)
 fl.plot_features_vs_label(...)
-fl.impute_outliers_with_knn(...)
-fl.clip_outliers(...)
-fl.transform_outliers(...)
-fl.apply_standard_scale(...)
-fl.apply_log1p(...)
-fl.apply_sqrt(...)
-fl.apply_yeo_johnson(...)
-fl.apply_quantile_normal(...)
 fl.run_per_feature_scan(...)
 fl.plot_combined_per_feature_scan(...)
 fl.plot_significant_transform_scatters(...)
 fl.run_pairwise_scan(...)
 fl.plot_combined_pairwise_scan(...)
 fl.plot_significant_pairwise_scatters(...)
-fl.compute_vif(...)
 ```
