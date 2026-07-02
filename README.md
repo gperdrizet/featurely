@@ -11,23 +11,11 @@ This project grew out of the instructor solution for the Fullstack Academy featu
 
 ```text
 featurely/
-├── data/
-├── notebooks/
-│   ├── original-assignment.ipynb
-│   ├── 01-EDA.ipynb
-│   ├── 02-outlier-cleaning.ipynb
-│   ├── 03-feature-transformations.ipynb
-│   ├── 04-interaction-features.ipynb
-│   ├── 05-p_censoring.ipynb
-│   ├── 06-location-feature-encoding.ipynb
-│   ├── 07-aggregate-features.ipynb
-│   ├── 08-clustering.ipynb
-│   ├── 09-smoothing.ipynb
-│   ├── 10-polyfeatures-pca.ipynb
-│   ├── config.py
-│   └── data/
+├── .devcontainers/          # Configuration files for devcontainer development environments
+├── .github/                 # GitHub workflow files for CI/CD
+├── example-notebooks/       # Notebooks demoing the use of Featurely 
 ├── src/
-│   └── featurely/
+│   └── featurely/           # The featurely package source tree
 │       ├── __init__.py
 │       ├── pipeline.py
 │       ├── eda.py
@@ -38,13 +26,15 @@ featurely/
 │       ├── aggregate.py
 │       ├── cluster.py
 │       ├── smoothing.py
-│       ├── decomposition.py
+│       ├── decomposition.py  
 │       └── diagnostics.py
-├── tests/
-│   └── test_imports.py
-├── AGENTS.md
-├── README.md
-└── pyproject.toml
+├── tests/                    # Unit tests
+├── AGENTS.md                 # Onboarding/orientation for AI agents 
+├── LICENSE                   # MIT license file
+├── README.md                 # README document
+├── pyproject.toml            # Python package metadata for PyPI
+├── requirements-dev.txt      # Package build/test requirements
+└── requirements.txt          # Requirements for local dev & example notebooks
 ```
 
 ## Notebook run order
