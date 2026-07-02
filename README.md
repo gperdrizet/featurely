@@ -36,7 +36,8 @@ featurely/
 ├── tests/                    # Unit tests
 ├── AGENTS.md                 # Onboarding/orientation for AI agents
 ├── LICENSE                   # MIT license file
-├── README.md                 # README document
+├── README.md                 # README document for GitHub
+├── README-pypi.md            # README document for PyPI
 ├── mkdocs.yml                # Documentation site configuration
 ├── pyproject.toml            # Python package metadata for PyPI
 ├── requirements-dev.txt      # Package build/test requirements
