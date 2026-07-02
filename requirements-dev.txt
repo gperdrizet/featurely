@@ -1,3 +1,4 @@
 -r requirements.txt
 pytest>=8.0
+trove-classifiers>=2025.5.9
 pylint>=3.0
