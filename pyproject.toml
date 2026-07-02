@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "featurely"
 version = "0.1.0"
 description = "Reusable feature engineering utilities"
-readme = "README.md"
+readme = "README-pypi.md"
 requires-python = ">=3.10"
 authors = [{ name = "George Perdrizet" }]
 license = { text = "MIT" }
