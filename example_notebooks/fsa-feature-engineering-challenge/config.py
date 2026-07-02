@@ -22,8 +22,20 @@ OUTLIER_THRESHOLD = 2.25
 LOG_FEATURES = ["AveRooms", "AveOccup"]
 
 # Location encoding (notebook 06)
+# Major California population centers used as distance anchors.
+CITY_COORDS = {
+    "LosAngeles": (34.05, -118.24),
+    "SanFrancisco": (37.77, -122.42),
+    "SanDiego": (32.72, -117.16),
+    "SanJose": (37.34, -121.89),
+    "Sacramento": (38.58, -121.49),
+    "Fresno": (36.74, -119.79),
+}
 GEOHASH_PRECISION = 4
 GEOHASH_MIN_CELL_COUNT = 100
+
+# Rotation aligned with the California coastline's northwest-southeast run.
+ROTATION_ANGLE_DEG = 45.0
 
 # Bin aggregates (notebook 07)
 AGG_BIN_FEATURES = ["Latitude", "MedInc"]

@@ -29,6 +29,7 @@ def show_figure() -> None:
     avoids the FigureCanvasAgg warning and frees the figure's memory in
     long-running processes and test suites.
     """
+
     backend = matplotlib.get_backend().lower()
 
     if backend in _NON_INTERACTIVE_BACKENDS:

@@ -17,6 +17,7 @@ def plot_feature_distributions(df: pd.DataFrame, exclude: tuple[str, ...] = ()) 
         exclude: Column names to skip, typically the target and any
             derived probability columns.
     """
+
     features = [c for c in df.columns if c not in exclude]
 
     n_cols = 4
@@ -52,12 +53,15 @@ def get_feature_correlations(df: pd.DataFrame, features: list[str]) -> pd.DataFr
         A frame indexed by (Feature A, Feature B) with r and p values for
         both statistics, sorted by Pearson r descending.
     """
+
     feature_pairs = [(f1, f2) for i, f1 in enumerate(features) for j, f2 in enumerate(features) if i < j]
 
     rows: list[dict[str, float | str]] = []
+
     for feature_a, feature_b in feature_pairs:
         pearson_r, pearson_p = pearsonr(df[feature_a], df[feature_b])
         spearman_r, spearman_p = spearmanr(df[feature_a], df[feature_b])
+
         rows.append(
             {
                 "Feature A": feature_a,
@@ -81,6 +85,7 @@ def plot_feature_correlations(df: pd.DataFrame, features: list[str]) -> None:
         df: Input frame.
         features: Columns to plot pairwise; every unique pair gets one panel.
     """
+
     feature_pairs = [(f1, f2) for i, f1 in enumerate(features) for j, f2 in enumerate(features) if i < j]
     feature_correlations_df = get_feature_correlations(df, features)
 
@@ -95,6 +100,7 @@ def plot_feature_correlations(df: pd.DataFrame, features: list[str]) -> None:
         layout="constrained",
         squeeze=False,
     )
+
     fig.suptitle("Feature correlations")
 
     for i, (feature_a, feature_b) in enumerate(feature_pairs):
@@ -105,13 +111,16 @@ def plot_feature_correlations(df: pd.DataFrame, features: list[str]) -> None:
 
         x = df[feature_a].values.reshape(-1, 1)
         y = df[feature_b].values
+
         model = LinearRegression().fit(x, y)
+
         x_range = np.linspace(x.min(), x.max(), 100).reshape(-1, 1)
         y_pred = model.predict(x_range)
         ax.plot(x_range, y_pred, color="red", linewidth=1)
 
         pearson_r = feature_correlations_df.loc[(feature_a, feature_b), "Pearson r"]
         spearman_r = feature_correlations_df.loc[(feature_a, feature_b), "Spearman r"]
+
         ax.text(
             0.25,
             0.95,
@@ -136,6 +145,7 @@ def plot_features_vs_label(df: pd.DataFrame, features: list[str], label: str) ->
         features: Feature columns to plot on the x axes.
         label: Target column plotted on every y axis.
     """
+
     n_cols = min(4, len(features))
     n_rows = (len(features) + n_cols - 1) // n_cols
 
@@ -150,12 +160,15 @@ def plot_features_vs_label(df: pd.DataFrame, features: list[str], label: str) ->
 
         x = df[feature].values.reshape(-1, 1)
         y = df[label].values
+
         model = LinearRegression().fit(x, y)
+
         x_range = np.linspace(x.min(), x.max(), 100).reshape(-1, 1)
         ax.plot(x_range, model.predict(x_range), color="red", linewidth=1)
 
         pearson_r, _ = pearsonr(df[feature], df[label])
         spearman_r, _ = spearmanr(df[feature], df[label])
+
         ax.text(
             0.25,
             0.95,

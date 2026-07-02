@@ -1,7 +1,7 @@
 """Spatial kernel smoothing of features.
 
 Smoothing replaces each row's feature value with a weighted average over its
-spatial neighborhood, suppressing block-level noise while preserving regional
+spatial neighborhood, suppressing row-level noise while preserving regional
 structure. This is Nadaraya-Watson kernel regression truncated to the nearest
 neighbors for tractability. Only feature columns are smoothed, never the
 target, so the candidates are leakage-free.
@@ -28,10 +28,23 @@ def compute_spatial_smoothed(
     For each row, the smoothed value is a Gaussian-weighted average of the
     feature over its ``n_neighbors`` nearest points in latitude-longitude
     space (each row is its own nearest neighbor, so the original value gets
-    the largest single weight). When ``bandwidth`` is None it defaults to
-    the median distance to the farthest retained neighbor, which adapts the
-    kernel width to local point density.
+    the largest single weight).
+
+    Args:
+        df: Input frame; not modified.
+        features: Columns to smooth.
+        lat_col: Name of the latitude column.
+        lon_col: Name of the longitude column.
+        n_neighbors: Neighborhood size for the truncated kernel.
+        bandwidth: Gaussian kernel width in coordinate units. When None it
+            defaults to the median distance to the farthest retained
+            neighbor, which adapts the width to local point density.
+        prefix: Prefix for output column names, e.g. ``smooth_{col}``.
+
+    Returns:
+        A frame of smoothed candidate columns.
     """
+
     coords = df[[lat_col, lon_col]].values
     nn = NearestNeighbors(n_neighbors=n_neighbors).fit(coords)
     dists, idx = nn.kneighbors(coords)
@@ -46,6 +59,7 @@ def compute_spatial_smoothed(
     weights /= weights.sum(axis=1, keepdims=True)
 
     out = {}
+
     for col in features:
         vals = df[col].values
         out[f"{prefix}_{col}"] = (weights * vals[idx]).sum(axis=1)

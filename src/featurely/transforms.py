@@ -15,8 +15,10 @@ def apply_standard_scale(df: pd.DataFrame, feature_cols: list[str]) -> pd.DataFr
     Returns:
         A copy of ``df`` with the selected columns scaled.
     """
+
     result = df.copy()
     result[feature_cols] = StandardScaler().fit_transform(result[feature_cols])
+
     return result
 
 
@@ -31,6 +33,7 @@ def apply_log1p(df: pd.DataFrame, feature_cols: list[str]) -> pd.DataFrame:
     Returns:
         A copy of ``df`` with the selected columns transformed and scaled.
     """
+
     result = df.copy()
     x = result[feature_cols].copy()
 
@@ -40,6 +43,7 @@ def apply_log1p(df: pd.DataFrame, feature_cols: list[str]) -> pd.DataFrame:
         result[col] = np.log1p(x[col] + shift)
 
     result[feature_cols] = StandardScaler().fit_transform(result[feature_cols])
+
     return result
 
 
@@ -54,6 +58,7 @@ def apply_sqrt(df: pd.DataFrame, feature_cols: list[str]) -> pd.DataFrame:
     Returns:
         A copy of ``df`` with the selected columns transformed and scaled.
     """
+
     result = df.copy()
     x = result[feature_cols].copy()
 
@@ -63,6 +68,7 @@ def apply_sqrt(df: pd.DataFrame, feature_cols: list[str]) -> pd.DataFrame:
         result[col] = np.sqrt(x[col] + shift)
 
     result[feature_cols] = StandardScaler().fit_transform(result[feature_cols])
+
     return result
 
 
@@ -79,8 +85,10 @@ def apply_yeo_johnson(df: pd.DataFrame, feature_cols: list[str]) -> pd.DataFrame
     Returns:
         A copy of ``df`` with the selected columns transformed.
     """
+
     result = df.copy()
     result[feature_cols] = PowerTransformer(method="yeo-johnson").fit_transform(result[feature_cols])
+
     return result
 
 
@@ -98,8 +106,11 @@ def apply_quantile_normal(df: pd.DataFrame, feature_cols: list[str], random_stat
     Returns:
         A copy of ``df`` with the selected columns transformed.
     """
+
     result = df.copy()
+
     result[feature_cols] = QuantileTransformer(output_distribution="normal", random_state=random_state).fit_transform(
         result[feature_cols]
     )
+
     return result

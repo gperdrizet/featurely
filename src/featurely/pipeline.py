@@ -9,18 +9,12 @@ from sklearn.model_selection import cross_val_score
 
 from ._display import show_figure
 
-DEFAULT_PIPELINE_COLORS = {
-    "raw": "#aaaaaa",
-    "+ p_censored": "#ffc000",
-    "+ cleaned": "#5b9bd5",
-    "+ transforms": "#70ad47",
-    "+ interactions": "#7030a0",
-}
-
 _PIPELINE_RESULTS_COLUMNS = ["stage", "mean_r2", "std_r2", "pct_vs_raw", "color", "scores"]
 
 
 def _empty_pipeline_results_df() -> pd.DataFrame:
+    """Create an empty results frame with the expected schema."""
+
     return pd.DataFrame(columns=_PIPELINE_RESULTS_COLUMNS)
 
 
@@ -28,13 +22,25 @@ def _load_pipeline_results(
     results_df: pd.DataFrame | None,
     results_path: str | Path | None,
 ) -> pd.DataFrame:
-    """Load persisted pipeline results when a path is provided, otherwise use in-memory data."""
+    """Load pipeline results from disk or from an in-memory frame.
+
+    Args:
+        results_df: Existing in-memory results, or None.
+        results_path: Optional pickle path for persisted results.
+
+    Returns:
+        Results frame with the expected columns in a stable order.
+    """
+
     if results_path is not None:
         path = Path(results_path)
+
         if path.exists():
             loaded = pd.read_pickle(path)
+
             # Keep only expected columns so downstream plotting remains stable.
             return loaded.reindex(columns=_PIPELINE_RESULTS_COLUMNS)
+
         return _empty_pipeline_results_df()
 
     if results_df is None:
@@ -44,6 +50,8 @@ def _load_pipeline_results(
 
 
 def _save_pipeline_results(results_df: pd.DataFrame, results_path: str | Path | None) -> None:
+    """Persist pipeline results when a path is provided."""
+
     if results_path is None:
         return
 
@@ -53,17 +61,27 @@ def _save_pipeline_results(results_df: pd.DataFrame, results_path: str | Path | 
 
 
 def _recompute_pct_vs_raw(results_df: pd.DataFrame) -> pd.DataFrame:
-    """Recompute percent improvement for all stages based on the current raw baseline row."""
+    """Recompute percent improvement from the current raw baseline row.
+
+    Args:
+        results_df: Pipeline results with stage-level mean scores.
+
+    Returns:
+        Results frame with ``pct_vs_raw`` refreshed for every stage.
+    """
+
     if results_df.empty or "raw" not in results_df["stage"].values:
         return results_df
 
     raw_mean = float(results_df.loc[results_df["stage"] == "raw", "mean_r2"].iloc[0])
+
     if raw_mean == 0:
         results_df["pct_vs_raw"] = 0.0
         return results_df
 
     results_df["pct_vs_raw"] = (results_df["mean_r2"] - raw_mean) / abs(raw_mean) * 100
     results_df.loc[results_df["stage"] == "raw", "pct_vs_raw"] = 0.0
+
     return results_df
 
 
@@ -88,21 +106,21 @@ def add_pipeline_step(
         label: Stage name; an existing row with this name is replaced.
         x: Feature matrix for this stage.
         y: Target series.
-        color: Explicit bar color; overrides ``color_map`` when given.
-        color_map: Stage-name-to-color mapping; defaults to
-            ``DEFAULT_PIPELINE_COLORS``.
+        color: Optional explicit plot color for this stage.
+        color_map: Optional stage-name-to-color mapping. When omitted, no
+            package palette is applied and plotting uses Matplotlib defaults.
         cv: Number of cross-validation folds.
         results_path: Optional pickle path for persisted, rerun-safe results.
 
     Returns:
         The updated results frame with recomputed percent-vs-raw values.
     """
+
     updated = _load_pipeline_results(results_df, results_path)
     scores = cross_val_score(LinearRegression(), x, y, cv=cv, scoring="r2")
 
-    if color is None:
-        palette = color_map or DEFAULT_PIPELINE_COLORS
-        color = palette.get(label, "#aaaaaa")
+    if color is None and color_map is not None:
+        color = color_map.get(label)
 
     raw_rows = updated.loc[updated["stage"] == "raw", "mean_r2"] if not updated.empty else pd.Series(dtype=float)
     raw_mean = float(raw_rows.iloc[0]) if len(raw_rows) > 0 else 0.0
@@ -122,15 +140,19 @@ def add_pipeline_step(
         updated = updated.drop_duplicates(subset=["stage"], keep="last").reset_index(drop=True)
 
     stage_matches = updated.index[updated["stage"] == label].tolist()
+
     if stage_matches:
         idx = stage_matches[0]
+
         for col, value in row.items():
             updated.at[idx, col] = value
+
     else:
         updated.loc[len(updated)] = row
 
     updated = _recompute_pct_vs_raw(updated)
     _save_pipeline_results(updated, results_path)
+
     return updated
 
 
@@ -152,7 +174,9 @@ def plot_pipeline_steps(
     Raises:
         ValueError: If no results are available to plot.
     """
+
     results_df = _load_pipeline_results(results_df, results_path)
+
     if results_df.empty:
         raise ValueError("No pipeline results available to plot.")
 
@@ -161,7 +185,13 @@ def plot_pipeline_steps(
 
     labels = results_df["stage"].tolist()
     all_scores = results_df["scores"].tolist()
-    colors = results_df["color"].tolist()
+
+    explicit_colors = results_df["color"].tolist()
+
+    # Fall back to Matplotlib's default property cycle when callers do not
+    # provide a color for a stage.
+    cycle = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    colors = [color if pd.notna(color) else cycle[i % len(cycle)] for i, color in enumerate(explicit_colors)]
 
     _, ax = plt.subplots(figsize=(max(5, 2 * len(labels)), 4))
     bp = ax.boxplot(all_scores, tick_labels=labels, patch_artist=True)

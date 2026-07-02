@@ -34,9 +34,11 @@ results = fl.add_pipeline_step(None, "raw", df[features], df[target])
 
 # Clean outliers and measure the effect
 df_clean = fl.clip_outliers(df, features, threshold=2.25)
+
 results = fl.add_pipeline_step(
     results, "+ cleaned", df_clean[features], df_clean[target]
 )
+
 fl.plot_pipeline_steps(results, title="Effect of outlier clipping")
 
 # Build candidates and screen them against baseline residuals
