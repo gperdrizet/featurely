@@ -27,7 +27,8 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "Topic :: Scientific/Engineering :: Data Science :: Machine Learning",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 dependencies = [
   "numpy>=1.24",
@@ -45,6 +46,8 @@ Repository = "https://github.com/gperdrizet/featurely"
 dev = [
   "pytest>=8.0",
   "ruff>=0.6",
+  "tomli>=2.0; python_version < '3.11'",
+  "trove-classifiers>=2025.5.9",
 ]
 docs = [
   "mkdocs-material>=9.5",

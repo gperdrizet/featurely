@@ -76,10 +76,29 @@ jobs:
           echo "EFFECTIVE_VERSION=${EFFECTIVE_VERSION}" >> "$GITHUB_ENV"
           grep '^version' pyproject.toml
 
+      - name: Validate package metadata
+        run: |
+          pip install build twine trove-classifiers
+          python - <<'PY'
+          import pathlib
+          import tomllib
+
+          import trove_classifiers
+
+          pyproject = tomllib.loads(pathlib.Path("pyproject.toml").read_text())
+          classifiers = pyproject["project"]["classifiers"]
+          invalid = sorted(set(classifiers) - set(trove_classifiers.classifiers))
+
+          if invalid:
+              raise SystemExit(f"Invalid Trove classifiers: {invalid}")
+          PY
+
       - name: Build distributions
         run: |
-          pip install build
           python -m build
+
+      - name: Check distributions
+        run: twine check dist/*
 
       - name: Publish to TestPyPI
         if: inputs.test_pypi

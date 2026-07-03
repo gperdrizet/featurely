@@ -1,3 +1,5 @@
 -r requirements.txt
 pytest>=8.0
+tomli>=2.0; python_version < '3.11'
+trove-classifiers>=2025.5.9
 pylint>=3.0
